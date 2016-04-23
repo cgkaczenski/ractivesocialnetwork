@@ -17,7 +17,9 @@ var getDatabaseConnection = function(callback) {
     callback(database);
     return;
   } else {
-    MongoClient.connect('mongodb://127.0.0.1:27017/nodejs-by-example', function(err, db) {
+    var env = process.env.NODE_ENV || 'development';
+    var connection = (env === 'production') ? process.env.MONGODB_URI : 'mongodb://127.0.0.1:27017/nodejs-by-example';
+    MongoClient.connect(connection, function(err, db) {
       if(err) {
         throw err;
       };
@@ -43,7 +45,7 @@ var validEmail = function(value) {
 };
 
 
-var Router = require('../frontend/js/lib/router')();
+var Router = require('../frontend/js/lib/Router')();
 Router
 .add('api/version', function(req, res) {
   response({

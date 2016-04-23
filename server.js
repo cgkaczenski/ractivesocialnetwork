@@ -5,7 +5,7 @@ var Assets = require('./backend/Assets');
 var API = require('./backend/API');
 var Default = require('./backend/Default');
 
-var Router = require('./frontend/js/lib/router')();
+var Router = require('./frontend/js/lib/Router')();
 
 Router
 .add('static', Assets)
@@ -17,14 +17,17 @@ var checkSession = function(req, res) {
   session({
     keys: ['nodejs-by-example']
   })(req, res, function() {
-    process(req, res);
+    processes(req, res);
   });
 }
 
-var process = function(req, res) {
+var processes = function(req, res) {
   Router.check(req.url, [req, res]);
 }
 
-var app = http.createServer(checkSession).listen(port, '127.0.0.1');
-console.log("Listening on 127.0.0.1:" + port);
+var env = process.env.NODE_ENV || 'development';
+var port = (env === 'production') ? process.env.PORT : 9000;
+
+var app = http.createServer(checkSession).listen(port);
+console.log("Listening on Port: " + port);
 
