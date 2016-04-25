@@ -1,4 +1,5 @@
 var Router = require('./lib/Router')();
+var FindFriends = require('./controllers/FindFriends');
 var Home = require('./controllers/Home');
 var Login = require('./controllers/Login');
 var Profile = require('./controllers/Profile');
@@ -47,6 +48,14 @@ window.onload = function() {
       } else {
         Router.navigate('login');
       }      
+    })
+    .add('find-friends', function() {
+      if(userModel.isLogged()) {
+        var p = new FindFriends();
+        showPage(p);
+      } else {
+        Router.navigate('login');
+      }
     })
     .add(function() {
       Router.navigate('home');

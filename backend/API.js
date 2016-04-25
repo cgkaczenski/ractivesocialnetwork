@@ -49,7 +49,7 @@ var Router = require('../frontend/js/lib/Router')();
 Router
 .add('api/version', function(req, res) {
   response({
-    version: '0.1'
+    version: '0.2'
   }, res);
 })
 .add('api/user/logout', function(req, res) {
