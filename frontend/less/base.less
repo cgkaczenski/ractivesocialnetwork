@@ -37,3 +37,19 @@ hr {
   -moz-box-shadow:  @x @y @blur @spread rgba(0, 0, 0, @alpha);
   box-shadow:   @x @y @blur @spread rgba(0, 0, 0, @alpha);
 }
+.green-button {
+  border: none;
+  background: @colorbrand;
+  color: @colortextinverted;
+  padding: 0.4em 2em;
+  font-size: 1em;
+  border-bottom: .2em solid darken(@colorbrand, 10%);
+  outline: 0;
+  cursor: pointer;
+  border-radius: 2px;
+}
+.green-button-active {
+  border-bottom: .1em solid darken(@colorbrand, 10%);
+  border-top: .1em solid @colorbrand;
+  transform: translate(0, 2px);
+}

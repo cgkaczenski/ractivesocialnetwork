@@ -1,3 +1,5 @@
+var Friends = require('../models/Friends');
+
 module.exports = Ractive.extend({
   template: require('../../tpl/find-friends'),
   components: {
@@ -11,6 +13,23 @@ module.exports = Ractive.extend({
     foundFriends: null
   },
   onrender: function() {
-    console.log('Find Friends rendered');
+    var model = new Friends();
+    var self = this;
+
+    this.on('find', function(e) {
+      self.set('loading', true);
+      self.set('message', '');
+      var searchFor = this.get('friendName');
+      model.find(searchFor, function(err, res) {
+        
+        if(res.friends && res.friends.length > 0) {
+          self.set('foundFriends', res.friends);
+        } else {
+          self.set('foundFriends', null);
+          self.set('message', 'Sorry, there is no friends matching <strong>' + searchFor + '<strong>');
+        }
+        self.set('loading', false);
+      });
+    });
   }
 });
