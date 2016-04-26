@@ -23,4 +23,16 @@
   <input type="button" value="delete account" on-click="deleteProfile" class="right attention"/>
 
 </form>
+{{#if friends.length > 0}}
+  <div class="hero">
+    <h1>Friends</h1>
+  </div>
+  <div class="friends-list">
+    {{#each friends:index}}
+      <div class="friend-list-item">
+        <h2>{{friends[index].firstName}}  {{friends[index].lastName}}</h2>
+      </div>
+    {{/each}}
+  </div>
+{{/if}}
 <appfooter />

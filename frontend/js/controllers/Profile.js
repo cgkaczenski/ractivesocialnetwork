@@ -1,8 +1,13 @@
+var Friends = require('../models/Friends');
+
 module.exports = Ractive.extend({
   template: require('../../tpl/profile'),
   components: {
     navigation: require('../views/Navigation'),
     appfooter: require('../views/Footer')
+  },
+  data: {
+    friends: []
   },
   onrender: function() {
     var self = this;
@@ -21,6 +26,18 @@ module.exports = Ractive.extend({
           self.set('success', 'Profile updated successfully.');
         }
       });
+    });
+    this.on('deleteProfile', function() {
+      if(confirm('Are you sure! Your account will be deleted permanently.')) {
+        userModel.del(function() {
+          window.location.href = '/';
+        });
+      }
+    });
+
+    var friends = new Friends();
+    friends.fetch(function(err, result) {
+      self.set('friends', result.friends);
     });
   }
 });
