@@ -66,6 +66,8 @@ module.exports = Ractive.extend({
 		var model = new ContentModel();
 		var self = this;
 		this.on('post', function() {
+		  var formData = new FormData();
+		  formData.append('text', this.get('text'));		
 		  model.create(formData, function(error, result) {
 		    self.set('text', '');
 		    if(error) {
@@ -502,19 +504,16 @@ module.exports = Ractive.extend({
 },{"../lib/Ajax":7}],10:[function(require,module,exports){
 var ajax = require('../lib/Ajax');
 var Base = require('./Base');
-
 module.exports = Base.extend({
   data: {
     url: '/api/content'
   },
-  create: function(content, callback) {
+  create: function(formData, callback) {
     var self = this;
     ajax.request({
       url: this.get('url'),
       method: 'POST',
-      data: {
-        text: content.text
-      },
+      formData: formData,
       json: true
     })
     .done(function(result) {
@@ -525,6 +524,7 @@ module.exports = Base.extend({
     });
   }
 });
+
 
 },{"../lib/Ajax":7,"./Base":9}],11:[function(require,module,exports){
 var ajax = require('../lib/Ajax');

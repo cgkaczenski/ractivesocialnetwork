@@ -1,18 +1,15 @@
 var ajax = require('../lib/Ajax');
 var Base = require('./Base');
-
 module.exports = Base.extend({
   data: {
     url: '/api/content'
   },
-  create: function(content, callback) {
+  create: function(formData, callback) {
     var self = this;
     ajax.request({
       url: this.get('url'),
       method: 'POST',
-      data: {
-        text: content.text
-      },
+      formData: formData,
       json: true
     })
     .done(function(result) {
@@ -23,3 +20,4 @@ module.exports = Base.extend({
     });
   }
 });
+

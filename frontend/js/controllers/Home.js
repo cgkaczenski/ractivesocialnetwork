@@ -15,6 +15,8 @@ module.exports = Ractive.extend({
 		var model = new ContentModel();
 		var self = this;
 		this.on('post', function() {
+		  var formData = new FormData();
+		  formData.append('text', this.get('text'));		
 		  model.create(formData, function(error, result) {
 		    self.set('text', '');
 		    if(error) {
