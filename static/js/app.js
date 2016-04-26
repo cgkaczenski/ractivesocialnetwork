@@ -62,13 +62,14 @@ module.exports = Ractive.extend({
   },
   onrender: function() {
     if(userModel.isLogged()) {
-    	var ContentModel = require('../models/Content');
 		var model = new ContentModel();
+		var formData = new FormData();
 		var self = this;
+
 		this.on('post', function() {
-		  var formData = new FormData();
-		  formData.append('text', this.get('text'));		
-		  model.create(formData, function(error, result) {
+		  model.create({
+		  	text: this.get('text')
+		  }, function(error, result) {
 		    self.set('text', '');
 		    if(error) {
 		      self.set('error', error.error);
@@ -513,7 +514,9 @@ module.exports = Base.extend({
     ajax.request({
       url: this.get('url'),
       method: 'POST',
-      formData: formData,
+      data: {
+        text: formData.text
+      },
       json: true
     })
     .done(function(result) {
