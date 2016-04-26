@@ -28,3 +28,5 @@ form .success{font-size:.9em;padding:1em;margin:0 0 1em;background:#94dda7}
 .friend-list-item h2{margin:0 0 .4em;padding:0;font-size:1.3em}
 .friend-list-item input[type=button]{border:none;background:#34a451;color:#fff;padding:.4em 2em;font-size:1em;border-bottom:.2em solid #287d3e;outline:0;cursor:pointer;border-radius:2px}
 .friend-list-item input[type=button]:active{border-bottom:.1em solid #287d3e;border-top:.1em solid #34a451;transform:translate(0,2px)}
+.content-item{background:#FFF;padding:2em;margin:2em 0 0;-webkit-box-sizing:border-box;-moz-box-sizing:border-box;box-sizing:border-box;-webkit-box-shadow:0 2px 3px 2px rgba(0,0,0,.25);-moz-box-shadow:0 2px 3px 2px rgba(0,0,0,.25);box-shadow:0 2px 3px 2px rgba(0,0,0,.25)}
+.content-item img{max-width:100%}
