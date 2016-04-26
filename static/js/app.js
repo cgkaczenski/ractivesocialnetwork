@@ -32,6 +32,19 @@ module.exports = Ractive.extend({
         self.set('loading', false);
       });
     });
+
+    this.on('add', function(e, id) {
+      this.set('loading', true);
+      model.add(id, function(err, res) {
+        self.set('loading', false);
+        self.set('foundFriends', null);
+        if(err) {
+          self.set('message', 'Operation failed.');
+        } else if(res.success === 'OK') {
+          self.set('message', 'Operation successful.');
+        }
+      });
+    });
   }
 });
 
@@ -450,6 +463,22 @@ module.exports = Base.extend({
       method: 'POST',
       data: {
         searchFor: searchFor
+      },
+      json: true
+    })
+    .done(function(result) {
+      callback(null, result);
+    })
+    .fail(function(xhr) {
+      callback(JSON.parse(xhr.responseText));
+    });
+  },
+  add: function(id, callback) {
+    ajax.request({
+      url: this.get('url') + '/add',
+      method: 'POST',
+      data: {
+        id: id
       },
       json: true
     })
