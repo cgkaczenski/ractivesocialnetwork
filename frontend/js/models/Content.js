@@ -9,9 +9,7 @@ module.exports = Base.extend({
     ajax.request({
       url: this.get('url'),
       method: 'POST',
-      data: {
-        text: formData.text
-      },
+      formData: formData,
       json: true
     })
     .done(function(result) {

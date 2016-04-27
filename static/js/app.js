@@ -67,15 +67,22 @@ module.exports = Ractive.extend({
 		var self = this;
 
 		this.on('post', function() {
-		  model.create({
-		  	text: this.get('text')
-		  }, function(error, result) {
+		  var files = this.find('input[type="file"]').files;
+		  var formData = new FormData();
+		  if(files.length > 0) {
+		    var file = files[0];
+		    if(file.type.match('image.*')) {
+		      formData.append('files', file, file.name);
+		    }
+		  }
+		  formData.append('text', this.get('text'));
+		  model.create(formData, function(error, result) {
 		    self.set('text', '');
 		    if(error) {
 		      self.set('error', error.error);
 		    } else {
 		      self.set('error', false);
-		      self.set('success', 'The post is saved successfully.<br />What about adding another one?');
+		      self.set('success', 'The post is saved  successfully.<br />What about adding another one?');
 		      getPosts();
 		    }
 		  });
@@ -300,17 +307,25 @@ module.exports = {
         if(ops.method == 'get') {
           this.xhr.open("GET", ops.url + getParams(ops.data, ops.url), true);
         } else {
-          this.xhr.open(ops.method, ops.url, true);
-          this.setHeaders({
-            'X-Requested-With': 'XMLHttpRequest',
-            'Content-type': 'application/x-www-form-urlencoded'
-          });
+          if(ops.formData) {
+            this.xhr.open(ops.method, ops.url);
+          } else {
+            this.xhr.open(ops.method, ops.url, true);
+            this.setHeaders({
+              'X-Requested-With': 'XMLHttpRequest',
+              'Content-type': 'application/x-www-form-urlencoded'
+            });
+          }
         }
         if(ops.headers && typeof ops.headers == 'object') {
           this.setHeaders(ops.headers);
         }       
-        setTimeout(function() { 
-          ops.method == 'get' ? self.xhr.send() : self.xhr.send(getParams(ops.data)); 
+        setTimeout(function() {
+          if(ops.formData) {
+            self.xhr.send(ops.formData); 
+          } else {
+            ops.method == 'get' ? self.xhr.send() : self.xhr.send(getParams(ops.data)); 
+          }
         }, 20);
         return this;
       },
@@ -514,9 +529,7 @@ module.exports = Base.extend({
     ajax.request({
       url: this.get('url'),
       method: 'POST',
-      data: {
-        text: formData.text
-      },
+      formData: formData,
       json: true
     })
     .done(function(result) {
