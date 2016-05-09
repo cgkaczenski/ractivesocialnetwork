@@ -1,4 +1,4 @@
-var Router = require('../frontend/js/lib/router')();
+var Router = require('../frontend/js/lib/Router')();
 
 Router
 .add('api/version', require('./api/version'))
