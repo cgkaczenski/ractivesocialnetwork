@@ -80,5 +80,40 @@ module.exports = {
       }
     }
     return api.process(ops);
+  },
+  init_upload: function(file, callback){
+    
+    var get_signed_request = function(file, cb){
+      var xhr = new XMLHttpRequest();
+      xhr.open("GET", "api/sign_s3?file_name="+file.name+"&file_type="+file.type, true);
+      xhr.onreadystatechange = function(){
+          if(xhr.readyState === 4){
+              if(xhr.status === 200){
+                  var response = JSON.parse(xhr.responseText);
+                  upload_file(file, response.signed_request);
+                  cb(response.url);
+                  
+              }
+              else{
+                  alert("Could not get signed URL.");
+              }
+          }
+      };
+      xhr.send();
+      }
+
+    var upload_file = function(file, signed_request, cb){
+        var xhr = new XMLHttpRequest();
+        xhr.open("PUT", signed_request, true);
+        xhr.setRequestHeader('x-amz-acl', 'public-read');
+        xhr.onerror = function() {
+            alert("Could not upload file."); 
+        };
+        xhr.send(file);
+    }
+    
+    get_signed_request(file, function(url){
+      callback(url);
+    });
   }
 }

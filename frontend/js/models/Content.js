@@ -4,6 +4,12 @@ module.exports = Base.extend({
   data: {
     url: '/api/content'
   },
+  upload: function(file, callback) {
+    var self = this;
+    var url = ajax.init_upload(file, function(url){
+      callback(url)
+    });
+  },
   create: function(formData, callback) {
     var self = this;
     ajax.request({

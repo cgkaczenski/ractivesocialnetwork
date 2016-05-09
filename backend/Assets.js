@@ -27,26 +27,25 @@ module.exports = function(req, res) {
   }
 
   var readFile = function(filePath) {
-    fs.exists(filePath, function(exists) {
-      if(exists && files[filePath] && false) {
-          serve(files[filePath]);
-      } else if(exists) {
-        fs.readFile(filePath, function(err, data) {
-          if(err) {
-            sendError('Error reading ' + filePath + '.');
-            return;
-          }
-          files[filePath] = {
-            ext: filePath.split(".").pop().toLowerCase(),
-            content: data
-          };
-          serve(files[filePath]);
-        });
-      } else {
-        sendError('File ' + req.url + ' does not exist.')
+	fs.stat(filePath, function(err, stats){
+		if(err) {
+        	sendError('FilePath does not exist: ' + filePath + '.');
+        	return;
+        }
+	});
+
+    fs.readFile(filePath, function(err, data) {
+      if(err) {
+        sendError('Error reading ' + filePath + '.');
+        return;
       }
+      files[filePath] = {
+        ext: filePath.split(".").pop().toLowerCase(),
+        content: data
+      };
+      serve(files[filePath]);
     });
-  }
+}
 
   readFile(path.normalize(__dirname + '/..' + req.url));
 

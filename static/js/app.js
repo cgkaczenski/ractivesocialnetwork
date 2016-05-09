@@ -62,45 +62,51 @@ module.exports = Ractive.extend({
   },
   onrender: function() {
     if(userModel.isLogged()) {
-		var model = new ContentModel();
-		var formData = new FormData();
-		var self = this;
+    	var file_input = window.document.getElementById("file_input");
+    	var formData = new FormData();
+			var model = new ContentModel();
+			var self = this;
 
-		this.on('post', function() {
-		  var files = this.find('input[type="file"]').files;
-		  var formData = new FormData();
-		  if(files.length > 0) {
-		    var file = files[0];
-		    if(file.type.match('image.*')) {
-		      formData.append('files', file, file.name);
+			file_input.onchange = function(){
+		    var files = self.find('input[type="file"]').files;
+		    if (files.length > 0){
+		      var file = files[0];
+		    }
+		    if (file.size < 200){
+		      model.upload(file, function(url){
+		      	formData.append('photoUrl', url);
+		      });
+		    } else {
+		      window.alert("Please choose an image under 200 bytes");
 		    }
 		  }
-		  formData.append('text', this.get('text'));
-		  model.create(formData, function(error, result) {
-		    self.set('text', '');
-		    if(error) {
-		      self.set('error', error.error);
-		    } else {
-		      self.set('error', false);
-		      self.set('success', 'The post is saved  successfully.<br />What about adding another one?');
-		      getPosts();
-		    }
-		  });
-		});
 
-		var getPosts = function() {
-	        model.fetch(function(err, result) {
-	          if(!err) {
-	            self.set('posts', result.posts);
-	          }
-	        });
-      	};
-      	getPosts();
+			this.on('post', function() {
+			  formData.append('text', this.get('text'));
+			  model.create(formData, function(error, result) {
+			    self.set('text', '');
+			    if(error) {
+			      self.set('error', error.error);
+			    } else {
+			      self.set('error', false);
+			      self.set('success', 'The post is saved  successfully.<br />What about adding another one?');
+			      getPosts();
+			    }
+			  });
+			});
 
+			var getPosts = function() {
+		        model.fetch(function(err, result) {
+		          if(!err) {
+		            self.set('posts', result.posts);
+		          }
+		        });
+	    };
+	    getPosts();
 		} else {
 			this.set('posting', false);
 		}
-  	}
+  }
 });
 },{"../../tpl/home":18,"../models/Content":10,"../views/Footer":14,"../views/Navigation":15}],3:[function(require,module,exports){
 module.exports = Ractive.extend({
@@ -348,8 +354,44 @@ module.exports = {
       }
     }
     return api.process(ops);
+  },
+  init_upload: function(file, callback){
+    
+    var get_signed_request = function(file, cb){
+      var xhr = new XMLHttpRequest();
+      xhr.open("GET", "api/sign_s3?file_name="+file.name+"&file_type="+file.type, true);
+      xhr.onreadystatechange = function(){
+          if(xhr.readyState === 4){
+              if(xhr.status === 200){
+                  var response = JSON.parse(xhr.responseText);
+                  upload_file(file, response.signed_request);
+                  cb(response.url);
+                  
+              }
+              else{
+                  alert("Could not get signed URL.");
+              }
+          }
+      };
+      xhr.send();
+      }
+
+    var upload_file = function(file, signed_request, cb){
+        var xhr = new XMLHttpRequest();
+        xhr.open("PUT", signed_request, true);
+        xhr.setRequestHeader('x-amz-acl', 'public-read');
+        xhr.onerror = function() {
+            alert("Could not upload file."); 
+        };
+        xhr.send(file);
+    }
+    
+    get_signed_request(file, function(url){
+      callback(url);
+    });
   }
 }
+
 },{}],8:[function(require,module,exports){
 module.exports = function() {
   return {
@@ -524,6 +566,12 @@ module.exports = Base.extend({
   data: {
     url: '/api/content'
   },
+  upload: function(file, callback) {
+    var self = this;
+    var url = ajax.init_upload(file, function(url){
+      callback(url)
+    });
+  },
   create: function(formData, callback) {
     var self = this;
     ajax.request({
@@ -656,7 +704,7 @@ module.exports = {"v":1,"t":[{"t":7,"e":"header","f":[{"t":7,"e":"navigation"}]}
 },{}],17:[function(require,module,exports){
 module.exports = {"v":1,"t":[{"t":7,"e":"footer","f":["Version: ",{"t":2,"r":"version"}]}]}
 },{}],18:[function(require,module,exports){
-module.exports = {"v":1,"t":[{"t":7,"e":"header","f":[{"t":7,"e":"navigation"}]}," ",{"t":7,"e":"div","a":{"class":"hero"},"f":[{"t":4,"n":50,"x":{"r":["posting"],"s":"_0===true"},"f":[{"t":7,"e":"form","a":{"enctype":"multipart/form-data","method":"post"},"f":[{"t":7,"e":"h3","f":["What is on your mind?"]}," ",{"t":4,"n":50,"x":{"r":["error"],"s":"_0&&_0!=\"\""},"f":[{"t":7,"e":"div","a":{"class":"error"},"f":[{"t":2,"r":"error"}]}]}," ",{"t":4,"n":50,"x":{"r":["success"],"s":"_0&&_0!=\"\""},"f":[{"t":7,"e":"div","a":{"class":"success"},"f":[{"t":3,"r":"success"}]}]}," ",{"t":7,"e":"label","a":{"for":"text"},"f":["Text"]}," ",{"t":7,"e":"textarea","a":{"value":[{"t":2,"r":"text"}]}}," ",{"t":7,"e":"input","a":{"type":"file","name":"file"}}," ",{"t":7,"e":"input","a":{"type":"button","value":"Post"},"v":{"click":"post"}}]}," ",{"t":4,"n":52,"r":"posts","i":"index","f":[{"t":7,"e":"div","a":{"class":"content-item"},"f":[{"t":7,"e":"h2","f":[{"t":2,"rx":{"r":"posts","m":[{"t":30,"n":"index"},"userName"]}}]}," ",{"t":2,"rx":{"r":"posts","m":[{"t":30,"n":"index"},"text"]}}," ",{"t":4,"n":50,"rx":{"r":"posts","m":[{"t":30,"n":"index"},"file"]},"f":[{"t":7,"e":"br"},{"t":7,"e":"br"}," ",{"t":7,"e":"img","a":{"src":["/static/uploads/",{"t":2,"rx":{"r":"posts","m":[{"t":30,"n":"index"},"file"]}}]}}]}]}]}]},{"t":4,"n":51,"f":[{"t":7,"e":"h1","f":["Node.js by example"]}],"x":{"r":["posting"],"s":"_0===true"}}]}," ",{"t":7,"e":"appfooter"}]}
+module.exports = {"v":1,"t":[{"t":7,"e":"header","f":[{"t":7,"e":"navigation"}]}," ",{"t":7,"e":"div","a":{"class":"hero"},"f":[{"t":4,"n":50,"x":{"r":["posting"],"s":"_0===true"},"f":[{"t":7,"e":"form","a":{"enctype":"multipart/form-data","method":"post"},"f":[{"t":7,"e":"h3","f":["What is on your mind?"]}," ",{"t":4,"n":50,"x":{"r":["error"],"s":"_0&&_0!=\"\""},"f":[{"t":7,"e":"div","a":{"class":"error"},"f":[{"t":2,"r":"error"}]}]}," ",{"t":4,"n":50,"x":{"r":["success"],"s":"_0&&_0!=\"\""},"f":[{"t":7,"e":"div","a":{"class":"success"},"f":[{"t":3,"r":"success"}]}]}," ",{"t":7,"e":"label","a":{"for":"text"},"f":["Text"]}," ",{"t":7,"e":"textarea","a":{"value":[{"t":2,"r":"text"}]}}," ",{"t":7,"e":"input","a":{"type":"file","name":"file","id":"file_input"}}," ",{"t":7,"e":"input","a":{"type":"button","value":"Post"},"v":{"click":"post"}}]}," ",{"t":4,"n":52,"r":"posts","i":"index","f":[{"t":7,"e":"div","a":{"class":"content-item"},"f":[{"t":7,"e":"h2","f":[{"t":2,"rx":{"r":"posts","m":[{"t":30,"n":"index"},"userName"]}}]}," ",{"t":2,"rx":{"r":"posts","m":[{"t":30,"n":"index"},"text"]}}," ",{"t":4,"n":50,"rx":{"r":"posts","m":[{"t":30,"n":"index"},"photoUrl"]},"f":[{"t":7,"e":"br"},{"t":7,"e":"br"}," ",{"t":7,"e":"img","a":{"src":[{"t":2,"rx":{"r":"posts","m":[{"t":30,"n":"index"},"photoUrl"]}}]}}]}]}]}]},{"t":4,"n":51,"f":[{"t":7,"e":"h1","f":["Node.js by example"]}],"x":{"r":["posting"],"s":"_0===true"}}]}," ",{"t":7,"e":"appfooter"}]}
 },{}],19:[function(require,module,exports){
 module.exports = {"v":1,"t":[{"t":7,"e":"header","f":[{"t":7,"e":"navigation"}]}," ",{"t":7,"e":"div","a":{"class":"hero"},"f":[{"t":7,"e":"h1","f":["Login"]}]}," ",{"t":7,"e":"form","f":[{"t":4,"n":50,"x":{"r":["error"],"s":"_0&&_0!=\"\""},"f":[{"t":7,"e":"div","a":{"class":"error"},"f":[{"t":2,"r":"error"}]}]}," ",{"t":4,"n":50,"x":{"r":["success"],"s":"_0&&_0!=\"\""},"f":[{"t":7,"e":"div","a":{"class":"success"},"f":[{"t":3,"r":"success"}]}]},{"t":4,"n":51,"f":[{"t":7,"e":"label","a":{"for":"email"},"f":["Email"]}," ",{"t":7,"e":"input","a":{"type":"text","id":"email","value":[{"t":2,"r":"email"}]}}," ",{"t":7,"e":"label","a":{"for":"password"},"f":["Password"]}," ",{"t":7,"e":"input","a":{"type":"password","id":"password","value":[{"t":2,"r":"password"}]}}," ",{"t":7,"e":"input","a":{"type":"button","value":"login"},"v":{"click":"login"}}],"x":{"r":["success"],"s":"_0&&_0!=\"\""}}]}," ",{"t":7,"e":"appfooter"}]}
 },{}],20:[function(require,module,exports){

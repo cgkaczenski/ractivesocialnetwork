@@ -1,6 +1,17 @@
+var aws = require('aws-sdk');
 var fs = require('fs');
 var sha1 = require('sha1');
 var ObjectId = require('mongodb').ObjectID;
+
+function getParameterByName(name, url) {
+    if (!url) url = window.location.href;
+    name = name.replace(/[\[\]]/g, "\\$&");
+    var regex = new RegExp("[?&]" + name + "(=([^&#]*)|&|#|$)"),
+        results = regex.exec(url);
+    if (!results) return null;
+    if (!results[2]) return '';
+    return decodeURIComponent(results[2].replace(/\+/g, " "));
+}
 
 var response = function(result, res) {
   res.writeHead(200, {'Content-Type': 'application/json'});
@@ -378,6 +389,39 @@ Router
     });
   break;
   };
+})
+.add('api/sign_s3', function(req, res){
+  var filename = getParameterByName('file_name', req.url.toString());
+  var filetype = getParameterByName('file_type', req.url.toString());
+
+  var name = filename.split('.')[0];
+  var ext = filename.split('.')[1];
+  name += '_' + Date.now();
+  name += '.' + ext;
+  filename = name;
+
+  aws.config.update({accessKeyId: AWS_ACCESS_KEY , secretAccessKey: AWS_SECRET_KEY });
+    var s3 = new aws.S3(); 
+    
+    var s3_params = { 
+        Bucket: S3_BUCKET, 
+        Key: filename, 
+        Expires: 60, 
+        ContentType: filetype, 
+        ACL: 'public-read'
+    }; 
+    s3.getSignedUrl('putObject', s3_params, function(err, data){ 
+        if(err){ 
+            console.log(err); 
+        }
+        else{
+          response({
+            signed_request: data,
+            url: 'https://'+S3_BUCKET+'.s3.amazonaws.com/'+filename,
+          }, res);
+      } 
+    });
+
 })
 .add(function(req, res) {
   response({
